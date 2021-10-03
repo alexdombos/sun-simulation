@@ -4,7 +4,7 @@
 //   detector and adds it up.                                                             //
 //                                                                                        //
 ////////////////////////////////////////////////////////////////////////////////////////////
- 
+
 #include "SteppingAction.hh"
 #include "DetectorConstruction.hh"
 
@@ -14,20 +14,18 @@
 #include <stdio.h>
 #include <cstring>
 
-SteppingAction::SteppingAction(DetectorConstruction* myDC):myDetector(myDC)
+SteppingAction::SteppingAction(DetectorConstruction* myDC)
+  : myDetector(myDC)
 { }
 
+void SteppingAction::UserSteppingAction(const G4Step* aStep) {
+  const G4VPhysicalVolume* currentVolume1 = aStep->GetPreStepPoint()->GetPhysicalVolume();
 
-void SteppingAction::UserSteppingAction(const G4Step* aStep)
-{
-  const G4VPhysicalVolume* currentVolume1 = aStep->GetPreStepPoint()-> GetPhysicalVolume();
-
-  if (currentVolume1 != NULL)
-  {  
-    for(int i=0; i<nDetectors; i++)
-    {
-      if (currentVolume1->GetName() == detectorName[i])   
+  if (currentVolume1 != NULL) {
+    for (int i = 0; i < nDetectors; ++i) {
+      if (currentVolume1->GetName() == detectorName[i]) {
         energy_MeV[i] += aStep->GetTotalEnergyDeposit();
+      }
     }
   }
 }

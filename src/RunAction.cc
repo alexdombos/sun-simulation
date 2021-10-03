@@ -21,70 +21,49 @@
 #include <iostream>
 #include "globals.hh"
 
-RunAction::RunAction()
-{
+RunAction::RunAction() {
   runIDcounter = 0;
 }
 
+RunAction::~RunAction() {
+}
 
-RunAction::~RunAction()
-{}
-
-
-void RunAction::BeginOfRunAction(const G4Run* aRun)
-{
-  ((G4Run *)(aRun))->SetRunID(runIDcounter++);
+void RunAction::BeginOfRunAction(const G4Run* aRun) {
+  ((G4Run*) (aRun))->SetRunID(runIDcounter++);
 
   G4cout << "Run " << aRun->GetRunID() << " start." << G4endl;
 
   srand(time(0));
 
-  //creates the file and tree for the .root output
-  newfile = new TFile("rootFiles/trial.root","recreate");
-  t = new TTree("t","output from geant");
+  // creates the file and tree for the .root output
+  newfile = new TFile("rootFiles/trial.root", "recreate");
+  t = new TTree("t", "output from geant");
 
   G4String branchName;
   G4String branchNameD;
 
-  for(int i=0; i<nDetectors; i++)
-   {
-     branchName="ene"+detectorName[i];
-     branchNameD="ene"+detectorName[i]+"/D";
- 
-     ebranch = t->Branch(branchName,&energy[i],branchNameD);
-   }
+  for (int i = 0; i < nDetectors; ++i) {
+    branchName = "ene" + detectorName[i];
+    branchNameD = "ene" + detectorName[i] + "/D";
 
-   ebranch = t->Branch("eneAll",&energy_tot,"eneAll/D");
-   ebranch = t->Branch("multi",&mult,"multi/I");
+    ebranch = t->Branch(branchName, &energy[i], branchNameD);
+  }
 
-  if(G4VVisManager::GetConcreteInstance())
-   {
-     G4UImanager::GetUIpointer()->ApplyCommand("/vis~/clear/view");
-     G4UImanager::GetUIpointer()->ApplyCommand("/vis~/draw/current");
-   }
+  ebranch = t->Branch("eneAll", &energy_tot, "eneAll/D");
+  ebranch = t->Branch("multi", &mult, "multi/I");
+
+  if (G4VVisManager::GetConcreteInstance()) {
+    G4UImanager::GetUIpointer()->ApplyCommand("/vis~/clear/view");
+    G4UImanager::GetUIpointer()->ApplyCommand("/vis~/draw/current");
+  }
 }
 
-
-void RunAction::EndOfRunAction(const G4Run* aRun)
-{
+void RunAction::EndOfRunAction(const G4Run* aRun) {
   G4cout << "Run " << aRun->GetRunID() << " ended." << G4endl;
 
-  if(G4VVisManager::GetConcreteInstance())
-   {
-     G4UImanager::GetUIpointer()->ApplyCommand("/vis~/show/view");
-   }
+  if (G4VVisManager::GetConcreteInstance()) {
+    G4UImanager::GetUIpointer()->ApplyCommand("/vis~/show/view");
+  }
 
-  t->Write(); //write the tree to file
+  t->Write(); // write the tree to file
 }
-
-
-
-
-
-
-
-
-
-
-
-

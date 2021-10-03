@@ -23,67 +23,69 @@
 #include <stdio.h>
 #include "Randomize.hh"
 
-EventAction::EventAction()
-{}
+EventAction::EventAction() {
+}
 
-EventAction::~EventAction()
-{}
+EventAction::~EventAction() {
+}
 
-void EventAction::BeginOfEventAction(const G4Event* evt)
-{
-  //status bar that prints out run number to screen
-  if ((evt->GetEventID()+1) % 10000 == 0)                 
-   G4cout << ">>> Event " << evt->GetEventID()+1 << G4endl;
-
- // figures out what gamma-ray cascade to run
-  int j = evt->GetEventID()+1; 
-  for (int i=0; i<nCascades; i++) 
-  {
-     if (i==0 && j<inputCutoff[0])
-       cascade=i;
-     else if (i>0 && j<inputCutoff[i] && j>=inputCutoff[i-1])
-       cascade=i;
+void EventAction::BeginOfEventAction(const G4Event* evt) {
+  // status bar that prints out run number to screen
+  if ((evt->GetEventID() + 1) % 10000 == 0) {
+    G4cout << ">>> Event " << evt->GetEventID() + 1 << G4endl;
   }
 
-  //set everything back to zero
-  for(int i=0; i<nDetectors; i++) 
-   { 
+  // figures out what gamma-ray cascade to run
+  int j = evt->GetEventID() + 1;
+  for (int i = 0; i < nCascades; ++i) {
+    if (i == 0 && j < inputCutoff[0]) {
+      cascade = i;
+    }
+    else if (i > 0 && j < inputCutoff[i] && j >= inputCutoff[i - 1]) {
+      cascade = i;
+    }
+  }
+
+  // set everything back to zero
+  for (int i = 0; i < nDetectors; ++i) {
     energy_MeV[i] = 0.0*eV;
     energy_keV[i] = 0.0*keV;
     sigma[i] = 0.0*keV;
     energy[i] = 0.0*keV;
-   }
-  energy_tot=0.0*keV;
-  mult=0;
+  }
+  energy_tot = 0.0*keV;
+  mult = 0;
+
 }
 
-
-void EventAction::EndOfEventAction(const G4Event* evt)
-{
+void EventAction::EndOfEventAction(const G4Event* evt) {
 
   // calculate energy and multiplicity to save to ROOT file
-  for(int i=0; i<nDetectors; i++)
-   {
-     double threshold = 40.0; //experimental threshold in keV
+  for (int i = 0; i < nDetectors; ++i) {
 
-     if (energy_MeV[i]*1000.0 > threshold)
-	   {	
-	     energy_keV[i]=1000.0*energy_MeV[i];
+    double threshold = 40.0; // experimental threshold in keV
 
-       //detector resolution function
-       sigma[i]=-5.59375e-15*pow(energy_keV[i],4.0)
-                +1.85975e-10*pow(energy_keV[i],3.0)
-                -2.47836e-6 *pow(energy_keV[i],2.0)
-                +2.33408e-2 *energy_keV[i]
-                +7.00328;
+    if (energy_MeV[i] * 1000.0 > threshold) {
 
-       energy[i] = G4RandGauss::shoot(energy_keV[i],sigma[i]);
+      energy_keV[i] = 1000.0 * energy_MeV[i];
 
-       energy_tot += energy[i];
-       ++mult;
-     }
-     else energy[i]=0.0; 
-   }
+      // detector resolution function
+      sigma[i] =
+	- 5.59375e-15 * pow(energy_keV[i], 4.0)
+	+ 1.85975e-10 * pow(energy_keV[i], 3.0)
+	- 2.47836e-6  * pow(energy_keV[i], 2.0)
+	+ 2.33408e-2  * energy_keV[i]
+	+ 7.00328;
 
-    t->Fill();
+      energy[i] = G4RandGauss::shoot(energy_keV[i], sigma[i]);
+
+      energy_tot += energy[i];
+      ++mult;
+    }
+    else {
+      energy[i] = 0.0;
+    }
+  }
+
+  t->Fill();
 }
